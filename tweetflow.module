@@ -8,6 +8,8 @@
 
 // TODO: Ability to add unlimited block of search result (profiles).
 
+define(MODULE_PATH, drupal_get_path('module', 'tweetflow'));
+
 /**
  * Implementation of hook_menu().
  */
@@ -34,8 +36,15 @@ function tweetflow_settings_form() {
 
   $form['tweetflow_keyword'] = array(
     '#type' => 'textarea',
+    '#title' => t('Keyword'),
     '#description' => t("Enter keyword to search from twitter, seperate by enter (newline)."),
     '#default_value' => variable_get('tweetflow_keyword', ''),
+  );
+
+  $form['tweetflow_rpp'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Result per page'),
+    '#default_value' => variable_get('tweetflow_rpp', 5),
   );
 
   return system_settings_form($form);
@@ -55,9 +64,19 @@ function tweetflow_block($op = 'list', $delta =0, $edit = array()) {
   else if ($op == 'configure' && $delta == 0) {
   }
   else if ($op == 'view') {
+    $query = variable_get("tweetflow_keyword", "");
+    if (empty($query)) {
+      return;
+    }
+    else {
+      $query = implode('+OR+', explode("\n", $query));
+    }
+
+    $rpp = variable_get('tweetflow_rpp', 5);
+
     $block = array(
-      'subject' => t("test"),
-      'content' => "Blah",
+      'subject' => t("TweetFlow"),
+      'content' => theme('tweetflow_realtime', $query, $rpp),
     );
 
     return $block;
@@ -70,10 +89,10 @@ function tweetflow_block($op = 'list', $delta =0, $edit = array()) {
 function tweetflow_theme($existing, $type, $theme, $path) {
   return array(
     'tweetflow_static' => array(
-      'argument' => array('tweets'),
+      'argument' => array('query', 'rpp'),
     ),
     'tweetflow_realtime' => array(
-      'argument' => array('tweets'),
+      'argument' => array('query', 'rpp'),
     ),
   );
 }
@@ -81,6 +100,14 @@ function tweetflow_theme($existing, $type, $theme, $path) {
 /**
  * Display realtime search.
  */
-function theme_tweetflow_realtime($tweets) {
+function theme_tweetflow_realtime($query, $rpp) {
+  drupal_add_css(MODULE_PATH .'/tweetflow.css');
+  drupal_add_js(MODULE_PATH .'/tweetflow.js');
+  
+  $settings = array('tweetflow_query' => $query, 'tweetflow_rpp' => $rpp);
+  drupal_add_js($settings, 'setting');
 
+  $content = '<div class="tweetflow-realtime">Your browser not support javascript.</div>';
+
+  return $content;
 }

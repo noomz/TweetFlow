@@ -1,0 +1,39 @@
+/**
+ * @file
+ * CSS file.
+ */
+
+ul.tweetflow-wrapper {
+  /* */
+}
+
+li.tweetflow-tweet {
+  float: left;
+  width: 200px;
+  height: 180px;
+  padding: 12px;
+
+  list-style: none;
+  background: transparent;
+  background-color: black;
+}
+
+li.tweetflow-tweet div.tweet-text {
+  height: 120px;
+  background-color: yellow;
+  margin-bottom: 14px;
+}
+
+li.tweetflow-tweet div.tweet-avatar {
+  float: left;
+}
+
+li.tweetflow-tweet div.tweet-data-r {
+  float: left;
+  margin-left: 5px;
+  color: white;
+}
+
+li.tweetflow-tweet div.tweet-data-r a {
+  font-weight: bolder;
+}
