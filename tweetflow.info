@@ -1,0 +1,6 @@
+; $Id$
+
+name = TweetFlow
+description = "Realtime twitter search display module."
+core = 6.x
+version = 6.x-0.1b
