@@ -14,14 +14,14 @@ li.tweetflow-tweet {
   padding: 12px;
 
   list-style: none;
-  background: transparent;
-  background-color: black;
+  background: #EDF5FA;
 }
 
 li.tweetflow-tweet div.tweet-text {
   height: 120px;
-  background-color: yellow;
-  margin-bottom: 14px;
+  background-color: #FFF;
+  margin-bottom: 10px;
+  padding: 3px;
 }
 
 li.tweetflow-tweet div.tweet-avatar {
@@ -31,9 +31,8 @@ li.tweetflow-tweet div.tweet-avatar {
 li.tweetflow-tweet div.tweet-data-r {
   float: left;
   margin-left: 5px;
-  color: white;
 }
 
-li.tweetflow-tweet div.tweet-data-r a {
+li.tweetflow-tweet div.tweet-from a {
   font-weight: bolder;
 }

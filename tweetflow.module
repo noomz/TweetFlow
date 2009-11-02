@@ -69,7 +69,10 @@ function tweetflow_block($op = 'list', $delta =0, $edit = array()) {
       return;
     }
     else {
-      $query = implode('+OR+', explode("\n", $query));
+      $query = explode("\n", $query);
+      foreach ($query as $k => &$val) {
+        $val = trim($val);
+      }
     }
 
     $rpp = variable_get('tweetflow_rpp', 5);
@@ -100,11 +103,16 @@ function tweetflow_theme($existing, $type, $theme, $path) {
 /**
  * Display realtime search.
  */
-function theme_tweetflow_realtime($query, $rpp) {
+function theme_tweetflow_realtime($keyword, $rpp) {
+  $query = implode('+OR+', $keyword);
+  $settings = array(
+    'tweetflow_query' => $query,
+    'tweetflow_rpp' => $rpp,
+    'tweetflow_keyword' => $keyword,
+  );
+
   drupal_add_css(MODULE_PATH .'/tweetflow.css');
   drupal_add_js(MODULE_PATH .'/tweetflow.js');
-  
-  $settings = array('tweetflow_query' => $query, 'tweetflow_rpp' => $rpp);
   drupal_add_js($settings, 'setting');
 
   $content = '<div class="tweetflow-realtime">Your browser not support javascript.</div>';

@@ -32,36 +32,76 @@ function relative_time(time_value) {
 }
 
 function tweetflow_run(query_text, rpp) {
-  var search_url = "http://search.twitter.com/search.json?rpp=" + rpp + "&q=";
-  var target = $("div.tweetflow-realtime");
 
+  var search_url = "http://search.twitter.com/search.json?rpp=" + rpp + "&q=";
+  var query = search_url + query_text + '&callback=?';
+  var last_tweet = '';
+
+  var target = $("div.tweetflow-realtime");
   target.text('');
 
-  $.getJSON(search_url + query_text + '&callback=?', function (data) {
+  function make_tweet(item) {
+    content = '';
+
+    // Make url link.
+    var link_regexp = /(^| )((ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?)/gi;
+    var user_regexp = /(^| )[\@]+([A-Za-z0-9-_]+)/gi;
+    var hash_regexp = /(^| )[\#]+([A-Za-z0-9-_]+)/gi;
+    var related_regexp = new RegExp("(^|<a .*?>|[ ,|])(" + Drupal.settings.tweetflow_keyword.join('|') + ")", "gi");
+
+    text = item.text.replace(hash_regexp, '$1<a href="http://search.twitter.com/search?q=&tag=$2&lang=all">#$2</a>');
+    text = text.replace(user_regexp,"$1<a href=\"http://twitter.com/$2\">@$2</a>");
+    text = text.replace(link_regexp,"$1<a href=\"$2\">$1</a>");
+    text = text.replace(related_regexp, "$1<strong>$2</strong>");
+
+    link = '<a href="http://twitter.com/' + item.from_user + '">' + item.from_user + '</a>';
+    avatar = '<img src="' + item.profile_image_url + '" width="48px" height="48px" />';
+    avatar = '<a href="http://twitter.com/' + item.from_user + '">' + avatar + '</a>';
+
+    content += '<li class="tweetflow-tweet">';
+    content += '<div class="tweet-text">' + text + '</div>';
+    content += '<div class="tweet-data">';
+    content += '<div class="tweet-avatar">' + avatar + '</div>';
+    content += '<div class="tweet-data-r"><div class="tweet-from">' + link + '</div>';
+    content += '<div class="tweet-when"><a href="http://twitter.com/' + item.from_user + '/status/' + item.id + '">' + relative_time(item.created_at) + '</a></div></div>';
+    content += '</div></li>';
+
+    last_tweet = item.id;
+    return content;
+  }
+
+  function update_tweet() {
+    var search_url = "http://search.twitter.com/search.json?rpp=" + 1 + "&since_id=" + last_tweet + "&q=";
+    var query = search_url + query_text + '&callback=?';
+
+    $.getJSON(query, function (data) {
+      if (data.results.length > 0) {
+        content = make_tweet(data.results[0]);
+        content = $(content);
+        content.css({display:'none'});
+        
+        target.find("li:first").hide("slow", function () {
+          $(this).remove();
+          target.find('ul').append(content);
+          content.show('slow');
+        });
+
+        setTimeout(function () {update_tweet();}, 30000);
+      }
+    });
+  }
+
+  $.getJSON(query, function (data) {
     var content = '<ul class="tweetflow-wrapper">';
 
     $.each(data.results, function (i, item) {
-      // Make url link.
-      var link_regexp = /(?:^| )((ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?)/gi;
-      var user_regexp = /(?:^| )[\@]+([A-Za-z0-9-_]+)/gi;
-      var hash_regexp = /(?:^| )[\#]+([A-Za-z0-9-_]+)/gi;
-
-      text = item.text.replace(hash_regexp, ' <a href="http://search.twitter.com/search?q=&tag=$1&lang=all">#$1</a>');
-      text = text.replace(user_regexp," <a href=\"http://twitter.com/$1\">@$1</a>");
-      text = text.replace(link_regexp," <a href=\"$1\">$1</a>");
-
-      content += '<li class="tweetflow-tweet">';
-      content += '<div class="tweet-text">' + text + '</div>';
-      content += '<div class="tweet-data">';
-      content += '<div class="tweet-avatar"><img src="' + item.profile_image_url + '" width="48px" height="48px" /></div>';
-      content += '<div class="tweet-data-r"><div class="tweet-from"><a href="http://twitter.com/' + item.from_user + '">' + item.from_user + '</a></div>';
-      content += '<div class="tweet-when">' + relative_time(item.created_at) + '</div></div>';
-      content += '</div></li>';
-
+      content += make_tweet(item);
     });
 
     content += '</ul>';
     target.append(content);
+
+    setTimeout(function () {update_tweet();}, 10000);
   });
 }
 
