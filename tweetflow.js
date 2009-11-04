@@ -41,7 +41,7 @@ function tweetflow_run(query_text, rpp) {
   target.text('');
 
   function make_tweet(item) {
-    content = '';
+    var content = '';
 
     // Make url link.
     var link_regexp = /(^| )((ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?)/gi;
@@ -66,7 +66,7 @@ function tweetflow_run(query_text, rpp) {
     content += '<div class="tweet-when"><a href="http://twitter.com/' + item.from_user + '/status/' + item.id + '">' + relative_time(item.created_at) + '</a></div></div>';
     content += '</div></li>';
 
-    last_tweet = item.id;
+    last_tweet = (last_tweet < item.id) ? item.id : last_tweet;
     return content;
   }
 
@@ -80,9 +80,9 @@ function tweetflow_run(query_text, rpp) {
         content = $(content);
         content.css({display:'none'});
         
-        target.find("li:first").hide("slow", function () {
+        target.find("li:last").hide("slow", function () {
           $(this).remove();
-          target.find('ul').append(content);
+          target.find('ul').prepend(content);
           content.show('slow');
         });
 
